@@ -655,7 +655,7 @@ P2Game.StateD.prototype = {
 
 
 	//this.player = this.game.add.sprite(40,40,'player');
-	this.player2 = this.game.add.sprite(50,50,'player');
+	this.player2 = this.game.add.sprite(5,5,'player');
 	this.game.physics.arcade.enable(this.player2);
 	this.player2.animations.add('idle', [0],1,true);
 	this.player2.animations.add('left', [0,1,2,3],4,true);
@@ -689,7 +689,7 @@ minusradius: function(){
 
 updateShadowTexture: function(){
     //this.shadowTexture.context.fillStyle = 'rgb(00, 00, 00)';
-    this.shadowTexture.context.fillStyle = 'rgb(00, 00, 00)';
+    this.shadowTexture.context.fillStyle = 'rgb(100, 100, 100)';
     this.shadowTexture.context.fillRect(0, 0, 2100, this.game.height);
 
     // Draw circle of light
