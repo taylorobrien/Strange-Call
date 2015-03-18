@@ -643,6 +643,7 @@ P2Game.StateD.prototype = {
     // Create an object that will use the bitmap as a texture
 	var lightSprite = this.game.add.image(0, 0, this.shadowTexture);
 
+
     // Set the blend mode to MULTIPLY. This will darken the colors of
     // everything below this sprite.
 	lightSprite.blendMode = Phaser.blendModes.MULTIPLY;
