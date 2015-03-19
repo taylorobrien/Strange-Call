@@ -4,6 +4,7 @@ var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'game');
 
 var score = 0;
 var health = 100;
+var mapscollected = 0;
 
 P2Game.Boot = function (game){
 
@@ -39,7 +40,9 @@ P2Game.Preload.prototype = {
 		var style3 = {font: "30px Arial", fill:"#DC143C"};
 		var scoringstuff = "Game is Loading....";
  		var winstatement = game.add.text(200,200,scoringstuff,style3);
-		this.load.audio('forest',['assets/forest.mp3','assets/forest.ogg']);
+		this.load.audio('dungeontheme',['assets/dungeontheme.mp3','assets/dungeontheme.ogg']);
+		this.load.audio('ringtone',['assets/iphone.mp3','assets/iphone.ogg']);
+		this.load.audio('cellphonecall',['assets/cellphonecall.mp3','assets/cellphonecall.ogg']);
 		this.load.spritesheet('player', 'assets/girl-sprite.png',31, 48, 8); 
 		this.load.image('background','assets/Park.jpg');
 		this.load.image('cellphone','assets/cellphone.png');
@@ -50,6 +53,7 @@ P2Game.Preload.prototype = {
 		this.load.image('flashlight', 'assets/flashlight.png'); 
 		this.load.image('exitdoor', 'assets/exitdoor.png'); 
 		this.load.image('background2','assets/background2.jpg');
+		this.load.image('maproll','assets/maproll.png');
 		this.load.image('textsprite','assets/spritetext.png');
 		this.load.image('ladder','assets/ladder.png');
 		this.load.image('battery','assets/battery.png');
@@ -77,6 +81,8 @@ P2Game.StateA = function (game) {
 	this.bg;
 	this.phone;
 	this.shake = false;
+	this.music1;
+	this.music2;
 
 },
 
@@ -93,6 +99,10 @@ preload: function () {
 	this.bg = game.add.tileSprite(0, 0, 2000, 600, 'background');
 	this.bg.scale.set(2,2);
 	
+	this.music1 = this.game.add.audio('ringtone');
+	this.music1.play('',0,1,true);
+
+	this.music2 = this.game.add.audio('cellphonecall');
 
 	this.phone = this.game.add.sprite(580,450,'cellphone');
 	this.game.physics.arcade.enable(this.phone);
@@ -136,7 +146,10 @@ this.game.height+2);
     getphone: function(){
 	this.phone.kill();
 	this.shake = true;
-	this.game.time.events.add(Phaser.Timer.SECOND * 1, this.nextstate, this);
+	this.music1.pause();
+	this.music2.play();
+
+	this.game.time.events.add(Phaser.Timer.SECOND * 10, this.nextstate, this);
 
 
 },
@@ -231,6 +244,10 @@ P2Game.StateC = function (game) {
 	this.getflash = false;
 	this.scoringstuff = "";
 	this.winstatement;
+	this.map1;
+	this.map2;
+	this.map3;
+	this.music;
 
 };
 
@@ -246,6 +263,9 @@ P2Game.StateC.prototype = {
     	this.layer =this. map.createLayer('Tile Layer 1');
     	this.layer.resizeWorld();
  	this.map.setCollisionBetween(1, 12);
+
+	this.music = this.game.add.audio('dungeontheme');
+	this.music.play('',0,1,true);
 	
 	this.game.physics.arcade.gravity.y = 200;
 
@@ -362,6 +382,19 @@ P2Game.StateC.prototype = {
 	this.game.camera.follow(this.player);
         this.cursors = this.input.keyboard.createCursorKeys();
 	this.jumpButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+
+	this.map1 = this.game.add.sprite(1100,100,'maproll');
+	this.game.physics.arcade.enable(this.map1);
+	this.map1.scale.set(.3,.3);
+	
+	this.map2 = this.game.add.sprite(850,550,'maproll');
+	this.game.physics.arcade.enable(this.map2);
+	this.map2.scale.set(.3,.3);
+
+	this.map3 = this.game.add.sprite(1900,470,'maproll');
+	this.game.physics.arcade.enable(this.map3);
+	this.map3.scale.set(.3,.3);
+
     },
 
     climb: function(){
@@ -372,8 +405,15 @@ P2Game.StateC.prototype = {
 
 },
 
+    getmap: function(body1,body2){
+	mapscollected ++;
+	body2.kill()
+
+},
+
     scoreone: function(body1, body2){
 	score = score + 1;
+	health = health + 5;
 	body2.kill();
 	
 },
@@ -404,6 +444,9 @@ P2Game.StateC.prototype = {
 	this.game.physics.arcade.overlap(this.player,this.ladder2,this.climb,null,this);
 	this.game.physics.arcade.overlap(this.player,this.ladder3,this.climb,null,this);
 	this.game.physics.arcade.overlap(this.player,this.ladder4,this.climb,null,this);
+	this.game.physics.arcade.overlap(this.player,this.map1,this.getmap,null,this);
+	this.game.physics.arcade.overlap(this.player,this.map2,this.getmap,null,this);
+	this.game.physics.arcade.overlap(this.player,this.map3,this.getmap,null,this);
 	this.game.physics.arcade.overlap(this.player,this.coin,this.scoreone,null,this);
 	this.game.physics.arcade.overlap(this.player,this.coin2,this.scoreone,null,this);
 	this.game.physics.arcade.overlap(this.player,this.coin3,this.scoreone,null,this);
@@ -415,11 +458,20 @@ P2Game.StateC.prototype = {
 	this.game.physics.arcade.overlap(this.player,this.sludge1,this.minushealth,null,this);
 	this.game.physics.arcade.overlap(this.player,this.sludge2,this.minushealth,null,this);
 	this.game.physics.arcade.collide(this.layer,this.ladder1);
+	this.game.physics.arcade.collide(this.layer,this.map1);
+	this.game.physics.arcade.collide(this.layer,this.map2);
+	this.game.physics.arcade.collide(this.layer,this.map3);
 	this.game.physics.arcade.collide(this.layer,this.flashlight);
 	this.game.physics.arcade.collide(this.layer,this.sludge1);
 	this.game.physics.arcade.collide(this.layer,this.sludge2);
 	this.game.physics.arcade.collide(this.layer,this.ladder2);
 	this.game.physics.arcade.collide(this.player,this.layer);
+
+
+	if (health <= 0){
+		this.state.start('End1');
+	}
+
 if (this.cursors.left.isDown)
     {
         this.player.body.velocity.x = -100;
@@ -468,6 +520,7 @@ else if (this.cursors.up.isDown && this.player.body.onFloor())
     render: function () {
 	this.game.debug.text("Score: " + score, 32, 35);
 	this.game.debug.text("Health: " + health, 680,35);
+	this.game.debug.text("Maps: " + mapscollected + "/5", 300,35);
 
     }
 
@@ -485,11 +538,12 @@ P2Game.StateD = function (game) {
 	this.walls;
 	this.LIGHT_RADIUS = 100;
 	this.battery1;
-	this.battery2;
+	this.battery4;
 	this.battery3;
 	this.sludge1;
 	this.sludge2;
 	this.sludge3;
+	this.ladder1;
 	this.coin;
 	this.coin2;
 	this.coin3;
@@ -501,30 +555,25 @@ P2Game.StateD = function (game) {
 	this.coin9;
 	this.coin10;
 	this.coin11;
+	this.map4;
+	this.map5;
+	this.music;
 
 
 };
+
 
 P2Game.StateD.prototype = {
 
     create: function () {
 
-	this.game.stage.backgroundColor = '#00FFFF';
 	this.bg = game.add.tileSprite(0, 0, 2000, 600, 'background2');
 	this.bg.mask = this.maskGraphics;
 
-	this.map = this.game.add.tilemap('level2');
-	this.map.addTilesetImage('redbrick');
-    	this.walls =this.map.createLayer('Tile Layer 1');
-    	this.walls.resizeWorld();
- 	this.map.setCollisionBetween(1, 12);
+	this.music = this.game.add.audio('dungeontheme');
+	this.music.play('',0,1,true);
 
-	this.game.physics.arcade.gravity.y = 200;
-
-	this.ladder1 = this.game.add.sprite(325,500,'ladder');
-	this.game.physics.arcade.enable(this.ladder1);
-	this.ladder1.body.collideWorldBounds = true;
-	this.ladder1.scale.set(.2,.5);
+/*
 
 	this.battery1 = this.game.add.sprite(310,100,'battery');
 	this.game.physics.arcade.enable(this.battery1);
@@ -536,11 +585,39 @@ P2Game.StateD.prototype = {
 	this.battery2.body.collideWorldBounds = true;
 	this.battery2.scale.set(.015,.015);
 	this.battery2.body.allowGravity = false;
-
+*/
 	this.battery3 = this.game.add.sprite(1880,150,'battery');
 	this.game.physics.arcade.enable(this.battery3);
 	this.battery3.body.collideWorldBounds = true;
 	this.battery3.scale.set(.015,.015);
+
+	
+	this.battery4 = this.game.add.sprite(300,400,'battery');
+	this.game.physics.arcade.enable(this.battery4);
+	this.battery4.body.collideWorldBounds = true;
+	this.battery4.scale.set(.015,.015);
+
+	this.map = this.game.add.tilemap('level2');
+	this.map.addTilesetImage('redbrick');
+    	this.layer =this.map.createLayer('Tile Layer 1');
+    	this.layer.resizeWorld();
+ 	this.map.setCollisionBetween(1, 12);
+
+/*
+	this.ladder1 = this.game.add.sprite(325,500,'ladder');
+	this.game.physics.arcade.enable(this.ladder1);
+	this.ladder1.body.collideWorldBounds = true;
+	this.ladder1.scale.set(.2,.5);
+	this.ladder1.body.allowGravity = false;
+
+	this.ladder2 = this.game.add.sprite(320,500,'ladder');
+	this.game.physics.arcade.enable(this.ladder2);
+	this.ladder2.body.collideWorldBounds = true;
+	this.ladder2.scale.set(.2,.5);
+	this.ladder2.body.allowGravity = false;
+*/
+	
+	this.game.physics.arcade.gravity.y = 200;
 
 	this.coin = this.game.add.sprite(50,500,'coin');
 	this.game.physics.arcade.enable(this.coin);
@@ -625,7 +702,7 @@ P2Game.StateD.prototype = {
 	this.sludge2.body.velocity.x = 60;
 	this.sludge2.body.bounce.set(1);
 
-	this.sludge3 = this.game.add.sprite(1400,133,'sludge');
+	this.sludge3 = this.game.add.sprite(1000,133,'sludge');
 	this.game.physics.arcade.enable(this.sludge3);
 	//this.sludge1.body.allowGravity = false;
 	this.sludge3.animations.add('spin',[0,1,2,3,4,5],6,true);
@@ -653,9 +730,7 @@ P2Game.StateD.prototype = {
 	//this.game.input.activePointer.x = this.game.width/2;
 	//this.game.input.activePointer.y = this.game.height/2;
 
-
-	//this.player = this.game.add.sprite(40,40,'player');
-	this.player2 = this.game.add.sprite(5,5,'player');
+	this.player2 = this.game.add.sprite(-300,-300,'player');
 	this.game.physics.arcade.enable(this.player2);
 	this.player2.animations.add('idle', [0],1,true);
 	this.player2.animations.add('left', [0,1,2,3],4,true);
@@ -666,6 +741,14 @@ P2Game.StateD.prototype = {
 	this.game.camera.follow(this.player2);
         this.cursors = this.input.keyboard.createCursorKeys();
 	this.jumpButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+
+	this.map4 = this.game.add.sprite(580,200,'maproll');
+	this.game.physics.arcade.enable(this.map4);
+	this.map4.scale.set(.3,.3);
+
+	this.map5 = this.game.add.sprite(1500,50,'maproll');
+	this.game.physics.arcade.enable(this.map5);
+	this.map5.scale.set(.3,.3);
 
 	this.game.time.events.repeat(Phaser.Timer.SECOND * 3, 1000, this.minusradius,this);
 	
@@ -680,8 +763,15 @@ climb: function(){
 
 },
 
+    getmap: function(body1,body2){
+	mapscollected ++;
+	body2.kill()
+
+},
+
+
 minusradius: function(){
-	if(this.LIGHT_RADIUS > 20){
+	if(this.LIGHT_RADIUS > 40){
 		this.LIGHT_RADIUS --;
 	}
 
@@ -689,7 +779,7 @@ minusradius: function(){
 
 updateShadowTexture: function(){
     //this.shadowTexture.context.fillStyle = 'rgb(00, 00, 00)';
-    this.shadowTexture.context.fillStyle = 'rgb(100, 100, 100)';
+    this.shadowTexture.context.fillStyle = 'rgb(00, 00, 00)';
     this.shadowTexture.context.fillRect(0, 0, 2100, this.game.height);
 
     // Draw circle of light
@@ -713,6 +803,7 @@ updateShadowTexture: function(){
 
    scoreone: function(body1,body2){
 	body2.kill();
+	health = health + 5;
 	score++;
 },
 
@@ -727,19 +818,25 @@ updateShadowTexture: function(){
     
     update: function () {
 	this.updateShadowTexture();
-	this.game.physics.arcade.collide(this.ladder1,this.walls);
-	this.game.physics.arcade.collide(this.exitdoor,this.walls);
-	this.game.physics.arcade.collide(this.sludge1,this.walls);
-	this.game.physics.arcade.collide(this.sludge2,this.walls);
-	this.game.physics.arcade.collide(this.sludge3,this.walls);
-	this.game.physics.arcade.collide(this.battery1,this.walls);
-	this.game.physics.arcade.collide(this.battery3,this.walls);
+	//this.game.physics.arcade.collide(this.ladder1,this.layer);
+	//this.game.physics.arcade.collide(this.ladder2,this.layer);
+	this.game.physics.arcade.collide(this.exitdoor,this.layer);
+	this.game.physics.arcade.collide(this.sludge1,this.layer);
+	this.game.physics.arcade.collide(this.sludge2,this.layer);
+	this.game.physics.arcade.collide(this.sludge3,this.layer);
+	this.game.physics.arcade.collide(this.battery4,this.layer);
+	this.game.physics.arcade.collide(this.map4,this.layer);
+	this.game.physics.arcade.collide(this.map5,this.layer);
+	this.game.physics.arcade.collide(this.battery3,this.layer);
+	this.game.physics.arcade.overlap(this.player2,this.map4,this.getmap,null,this);
+	this.game.physics.arcade.overlap(this.player2,this.map5,this.getmap,null,this);
 	this.game.physics.arcade.overlap(this.player2,this.exitdoor, this.leave,null,this);
-	this.game.physics.arcade.overlap(this.player2,this.battery1, this.pickbattery,null,this);
-	this.game.physics.arcade.overlap(this.player2,this.battery2, this.pickbattery,null,this);
+	//this.game.physics.arcade.overlap(this.player2,this.battery1, this.pickbattery,null,this);
+	this.game.physics.arcade.overlap(this.player2,this.battery4, this.pickbattery,null,this);
 	this.game.physics.arcade.overlap(this.player2,this.battery3, this.pickbattery,null,this);
-	this.game.physics.arcade.overlap(this.player2,this.ladder1,this.climb,null,this);
-	this.game.physics.arcade.collide(this.player2,this.walls);
+	//this.game.physics.arcade.overlap(this.player2,this.ladder1,this.climb,null,this);
+	//this.game.physics.arcade.overlap(this.player2,this.ladder2,this.climb,null,this);
+	this.game.physics.arcade.collide(this.player2,this.layer);
 	this.game.physics.arcade.overlap(this.player2,this.sludge1,this.minushealth,null,this);	
 	this.game.physics.arcade.overlap(this.player2,this.sludge2,this.minushealth,null,this);
 	this.game.physics.arcade.overlap(this.player2,this.sludge3,this.minushealth,null,this);
@@ -755,6 +852,9 @@ updateShadowTexture: function(){
 	this.game.physics.arcade.overlap(this.player2,this.coin10,this.scoreone,null,this);
 	this.game.physics.arcade.overlap(this.player2,this.coin11,this.scoreone,null,this);
 	
+	if (health <= 0){
+		this.state.start('End1');
+	}
 
 if (this.cursors.left.isDown)
     {
@@ -805,7 +905,7 @@ else if (this.cursors.up.isDown && this.player2.body.onFloor())
 
     	this.game.debug.text("Score: " + score, 32, 35);
 	this.game.debug.text("Health: " + health, 680,35);
-
+	this.game.debug.text("Maps: " + mapscollected + "/5", 300,35);
 },
 
 };
@@ -824,11 +924,17 @@ P2Game.End1.prototype = {
 
     create: function () {
 
+
 	this.game.stage.backgroundColor = '#00FFFF';
-	
+	score = score + mapscollected;	
 
 	var style3 = {font: "30px Arial", fill:"#DC143C"};
-	var scoringstuff = "Good job! You made it out alive! Refresh to play again!";
+	if(mapscollected > 0 && mapscollected <5){
+		var scoringstuff = "Thanks for your help! Hopefully this helps! Score: " + score;}
+	if(mapscollected == 5){
+		var scoringstuff = "Wow! You did perfect, you collected the maps! Score: " + score;}
+	if(mapscollected == 0){
+		var scoringstuff = "Remind us why you went in there again? Score: " + score;}
  	var winstatement = game.add.text(50,200,scoringstuff,style3);
 	
 
@@ -869,50 +975,10 @@ game.state.start('Boot');
 //http://gamemechanicexplorer.com/#lighting-1 - Mechanics for light
 //http://www.bestprepperproducts.com/wp-content/uploads/2014/10/best_flashlight_for_emergency_kits.png
 //http://thumbs.dreamstime.com/z/old-wooden-sign-background-message-32590914.jpg
-
-//old game below
-
-//http://greatleadersserve.com/wp-content/uploads/2012/08/iStock_000020378687XSmall.jpg
+//http://images.clipartof.com/thumbnails/1174183-Cartoon-Of-A-Rolled-Up-Old-Scroll-Tied-With-A-Ribbon-Royalty-Free-Vector-Clipart.jpg
+//http://www.newgrounds.com/audio/listen/592822
 //http://imageshack.com/handle_redirect.php?ser=233&file=animations2222223.png
-//http://cliparts.co/cliparts/8cz/nLb/8cznLbR7i.png
-//http://previews.123rf.com/images/zentilia/zentilia1111/zentilia111100067/11503913-3d-rendering-of-blank-signs-pointing-in-opposite-directions-Stock-Photo.jpg
-//http://img3.wikia.nocookie.net/__cb20130304122439/sonic/images/d/d3/Spikes_in_Sonic_the_Hedgehog_4.png
-//http://www.wikihow.com/images/e/eb/594851-11.jpg
-//http://static.giantbomb.com/uploads/original/12/126604/2430869-7835230262-starf.gif
-//http://fc03.deviantart.net/fs70/f/2013/177/9/e/bina___rpg_sprites__request__by_lagoon_sadnes-d6atbky.png//http://felicemagazine.weebly.com/uploads/2/1/8/7/21874606/9978435_orig.png
-
-//http://greatleadersserve.com/wp-content/uploads/2012/08/iStock_000020378687XSmall.jpg
-//http://imageshack.com/handle_redirect.php?ser=233&file=animations2222223.png
-//http://cliparts.co/cliparts/8cz/nLb/8cznLbR7i.png
-//http://previews.123rf.com/images/zentilia/zentilia1111/zentilia111100067/11503913-3d-rendering-of-blank-signs-pointing-in-opposite-directions-Stock-Photo.jpg
-//http://img3.wikia.nocookie.net/__cb20130304122439/sonic/images/d/d3/Spikes_in_Sonic_the_Hedgehog_4.png
-//http://www.wikihow.com/images/e/eb/594851-11.jpg
-//http://static.giantbomb.com/uploads/original/12/126604/2430869-7835230262-starf.gif
-//http://fc03.deviantart.net/fs70/f/2013/177/9/e/bina___rpg_sprites__request__by_lagoon_sadnes-d6atbky.png//http://felicemagazine.weebly.com/uploads/2/1/8/7/21874606/9978435_orig.png
+//http://www.zedge.net/ringtone/152980/
 
 
-
-
-
-/*
-	var mouseAngle = Math.atan2(this.player.y-game.input.y,this.player.x-game.input.x);
-	this.maskGraphics.clear();
-	this.maskGraphics.lineStyle(2, 0xffffff, 1);
-	this.maskGraphics.beginFill(0xffff00);
-	this.maskGraphics.moveTo(this.player.x,this.player.y);
-	for(var i = 0; i<this.numberOfRays; i++){	
-		var rayAngle = mouseAngle-(this.lightAngle/2)+(this.lightAngle/this.numberOfRays)*i
-		var lastX = this.player.x;
-		var lastY = this.player.y;
-		for(var j= 1; j<=this.rayLength;j+=1){
-	       		var landingX = Math.round(this.player.x-(2*j)*Math.cos(rayAngle));
-          		var landingY = Math.round(this.player.y-(2*j)*Math.sin(rayAngle));
-          		
-			}
-			this.maskGraphics.lineTo(lastX,lastY);
-		}
-		this.maskGraphics.lineTo(this.player.x, this.player.y);
-		this.maskGraphics.endFill();
-		this.bg.alpha = 0.5+Math.random()*0.5;
-Try number 1*/
 
