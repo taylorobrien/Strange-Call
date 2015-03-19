@@ -3,7 +3,7 @@ var P2Game = {};
 var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'game');
 
 var score = 0;
-var health = 100;
+var health = 200;
 var mapscollected = 0;
 
 P2Game.Boot = function (game){
