@@ -265,7 +265,7 @@ P2Game.StateC.prototype = {
  	this.map.setCollisionBetween(1, 12);
 
 	this.music = this.game.add.audio('dungeontheme');
-	this.music.play('',0,1,true);
+	this.music.play();
 	
 	this.game.physics.arcade.gravity.y = 200;
 
@@ -285,6 +285,12 @@ P2Game.StateC.prototype = {
 	this.ladder4.body.collideWorldBounds = true;
 	this.ladder4.scale.set(.2,.5);
 	this.ladder4.body.allowGravity = false;
+
+	this.ladder5 = this.game.add.sprite(1650,200,'ladder');
+	this.game.physics.arcade.enable(this.ladder5);
+	this.ladder5.body.collideWorldBounds = true;
+	this.ladder5.scale.set(.2,.5);
+	this.ladder5.body.allowGravity = false;
 
 	this.ladder2 = this.game.add.sprite(550,400,'ladder');
 	this.game.physics.arcade.enable(this.ladder2);
@@ -444,6 +450,7 @@ P2Game.StateC.prototype = {
 	this.game.physics.arcade.overlap(this.player,this.ladder2,this.climb,null,this);
 	this.game.physics.arcade.overlap(this.player,this.ladder3,this.climb,null,this);
 	this.game.physics.arcade.overlap(this.player,this.ladder4,this.climb,null,this);
+	this.game.physics.arcade.overlap(this.player,this.ladder5,this.climb,null,this);
 	this.game.physics.arcade.overlap(this.player,this.map1,this.getmap,null,this);
 	this.game.physics.arcade.overlap(this.player,this.map2,this.getmap,null,this);
 	this.game.physics.arcade.overlap(this.player,this.map3,this.getmap,null,this);
@@ -569,9 +576,6 @@ P2Game.StateD.prototype = {
 
 	this.bg = game.add.tileSprite(0, 0, 2000, 600, 'background2');
 	this.bg.mask = this.maskGraphics;
-
-//	this.music = this.game.add.audio('dungeontheme');
-//	this.music.play('',0,1,true);
 
 /*
 
