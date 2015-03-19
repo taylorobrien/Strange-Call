@@ -570,8 +570,8 @@ P2Game.StateD.prototype = {
 	this.bg = game.add.tileSprite(0, 0, 2000, 600, 'background2');
 	this.bg.mask = this.maskGraphics;
 
-	this.music = this.game.add.audio('dungeontheme');
-	this.music.play('',0,1,true);
+//	this.music = this.game.add.audio('dungeontheme');
+//	this.music.play('',0,1,true);
 
 /*
 
